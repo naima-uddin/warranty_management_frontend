@@ -42,22 +42,27 @@ export default function WarrantyForm({ existing }: Props) {
   };
 
   const field =
-    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900";
-  const label = "mb-1 block text-sm font-medium text-slate-700";
+    "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
+  const label = "mb-1.5 block text-sm font-medium text-slate-700";
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-2xl font-semibold">
-        {existing ? "Edit warranty" : "New warranty"}
-      </h1>
+    <form onSubmit={submit} className="mx-auto max-w-2xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {existing ? "Edit warranty" : "New warranty"}
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Fill in the details below to generate the warranty card.
+        </p>
+      </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+        <p className="mb-5 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 ring-1 ring-red-100">
           {error}
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2">
         <div>
           <label className={label}>Order ID *</label>
           <input
@@ -164,17 +169,20 @@ export default function WarrantyForm({ existing }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="mt-5 flex gap-2">
         <button
           disabled={busy}
-          className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 disabled:opacity-60"
         >
+          {busy && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          )}
           {busy ? "Saving…" : existing ? "Save changes" : "Create warranty"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border border-slate-300 px-5 py-2 text-sm hover:bg-slate-100"
+          className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium transition hover:bg-slate-100"
         >
           Cancel
         </button>
