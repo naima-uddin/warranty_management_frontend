@@ -36,33 +36,44 @@ export default function Slip({ w }: { w: Warranty }) {
         INVOICE &amp; WARRANTY CARD
       </h2>
 
-      {/* Order header */}
-      <div className="mb-5 grid grid-cols-4 border border-slate-400 text-[13px]">
-        <div className="border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
+      {/* Order header — narrow grey labels, wide values, so each
+          label clearly pairs with the value directly beside it. */}
+      <div className="mb-5 grid grid-cols-[auto_1fr_auto_1fr] border border-slate-400 text-[13px]">
+        <div className="flex items-center border-b border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
           Order ID
         </div>
-        <div className="border-r border-slate-400 px-3 py-2">{w.orderId}</div>
-        <div className="border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
+        <div className="flex items-center border-b border-r border-slate-400 px-3 py-2">
+          {w.orderId}
+        </div>
+        <div className="flex items-center border-b border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold whitespace-nowrap">
           Purchase Date
         </div>
-        <div className="px-3 py-2">{fmtDate(w.purchaseDate)}</div>
+        <div className="flex items-center border-b border-slate-400 px-3 py-2">
+          {fmtDate(w.purchaseDate)}
+        </div>
       </div>
 
       {/* Product info */}
       <Band>PRODUCT INFORMATION</Band>
       <div className="mb-5 grid grid-cols-[160px_1fr] border border-t-0 border-slate-400">
-        <div className="border-b border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
+        <div className="flex items-center border-b border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
           Product name
         </div>
-        <div className="border-b border-slate-400 px-3 py-2">{w.productName}</div>
-        <div className="border-b border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
+        <div className="flex items-center border-b border-slate-400 px-3 py-2">
+          {w.productName}
+        </div>
+        <div className="flex items-center border-b border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
           Quantity
         </div>
-        <div className="border-b border-slate-400 px-3 py-2">{w.quantity}</div>
-        <div className="border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
+        <div className="flex items-center border-b border-slate-400 px-3 py-2">
+          {w.quantity}
+        </div>
+        <div className="flex items-center border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
           Warranty Period
         </div>
-        <div className="px-3 py-2">Valid till {fmtDate(w.warrantyEndDate)}</div>
+        <div className="flex items-center px-3 py-2">
+          Valid till {fmtDate(w.warrantyEndDate)}
+        </div>
       </div>
 
       {w.imageUrl && (

@@ -78,6 +78,14 @@
   animation: gradient-shift 12s ease infinite;
 }
 
+/* Crisp dark table lines for the warranty slip — the default slate-400 border
+   is too faint to read on screen and prints almost invisibly. Applies on both
+   screen and paper so every cell (Order ID / Purchase Date, product info, …)
+   has a clearly visible separating line. */
+#print-slip [class*="border-slate"] {
+  border-color: #334155 !important; /* slate-700 */
+}
+
 /* ---------- Print: only the slip, fit to one A4 page ---------- */
 @media print {
   @page {
@@ -99,12 +107,6 @@
     /* keep black bands & grey cells when printing */
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  /* Light slate borders print almost invisibly — force crisp dark table
-     lines on paper (Order ID / Purchase Date cells, product info table, etc.) */
-  #print-slip [class*="border-slate"] {
-    border-color: #334155 !important; /* slate-700 */
   }
 
   #print-slip {
