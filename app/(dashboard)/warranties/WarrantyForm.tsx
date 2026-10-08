@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import type { Warranty } from "@/lib/types";
@@ -15,6 +15,8 @@ export default function WarrantyForm({ existing }: Props) {
   const [preview, setPreview] = useState<string | null>(
     existing?.imageUrl || null
   );
+  const [removed, setRemoved] = useState(false); // existing image cleared?
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Editable template lists (pre-filled from existing entry or the default template).
   const [covered, setCovered] = useState<string[]>(
@@ -35,6 +37,8 @@ export default function WarrantyForm({ existing }: Props) {
       const fd = new FormData(e.currentTarget);
       // Drop empty image input so we don't overwrite on edit.
       if (!(fd.get("image") as File)?.size) fd.delete("image");
+      // Tell the server to clear the existing image if the user removed it.
+      if (removed && !fd.has("image")) fd.set("removeImage", "true");
 
       // Attach the editable lists as JSON (so an emptied list is saved too).
       fd.set("covered", JSON.stringify(covered.filter((x) => x.trim())));
@@ -171,11 +175,13 @@ export default function WarrantyForm({ existing }: Props) {
         <div className="sm:col-span-2">
           <label className={label}>Product image (optional)</label>
           <input
+            ref={fileRef}
             type="file"
             name="image"
             accept="image/*"
             onChange={(e) => {
               const file = e.target.files?.[0];
+              setRemoved(false);
               setPreview(
                 file ? URL.createObjectURL(file) : existing?.imageUrl || null
               );
@@ -183,12 +189,28 @@ export default function WarrantyForm({ existing }: Props) {
             className="block text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-slate-200"
           />
           {preview && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={preview}
-              alt="preview"
-              className="mt-2 h-24 w-24 rounded-lg object-cover ring-1 ring-slate-200"
-            />
+            <div className="relative mt-2 inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={preview}
+                alt="preview"
+                className="h-24 w-24 rounded-lg object-cover ring-1 ring-slate-200"
+              />
+              <button
+                type="button"
+                title="Remove image"
+                onClick={() => {
+                  setPreview(null);
+                  setRemoved(true);
+                  if (fileRef.current) fileRef.current.value = "";
+                }}
+                className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-red-600 text-white shadow ring-2 ring-white transition hover:bg-red-700"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M6 6l12 12M18 6L6 18" strokeWidth="2.2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           )}
         </div>
       </div>
