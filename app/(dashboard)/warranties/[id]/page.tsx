@@ -31,7 +31,7 @@ export default function WarrantyDetailPage() {
   if (!item) return <p className="text-slate-400">Loading…</p>;
 
   return (
-    <div className="mx-auto max-w-[640px]">
+    <div className="mx-auto max-w-160">
       <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
         <Link
           href="/dashboard"
@@ -68,7 +68,9 @@ export default function WarrantyDetailPage() {
         </div>
       </div>
 
-      <Slip w={item} />
+      <div className="overflow-x-auto">
+        <Slip w={item} />
+      </div>
     </div>
   );
 }

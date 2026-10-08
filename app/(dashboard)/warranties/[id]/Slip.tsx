@@ -1,31 +1,5 @@
 import type { Warranty } from "@/lib/types";
-
-// Static company template content (fixed per the warranty policy).
-const COVERED = [
-  "Manufacturing defects",
-  "Hardware-related issues covered under warranty",
-  "Product inspection by our service team",
-  "Repair or replacement of eligible defective products according to the applicable product warranty terms.",
-];
-
-const NOT_COVERED = [
-  "Damage caused after delivery by misuse, accidents or improper handling.",
-  "Screen or body damage caused by impact or pressure after delivery.",
-  "Liquid damage, unless expressly covered by the product warranty.",
-  "Faults caused by unauthorized repairs or modifications.",
-];
-
-const STEPS = [
-  "Contact customer support and provide your Order ID/Invoice Number.",
-  "Provide the product and necessary accessories for inspection.",
-  "Our service team will inspect the product.",
-  "Warranty service will be provided according to the applicable warranty policy.",
-];
-
-const SUPPORT = {
-  phone: "+8809678833626",
-  email: "support.policy1@gmail.com",
-};
+import { TEMPLATE } from "@/lib/types";
 
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString("en-GB", {
@@ -41,10 +15,17 @@ const Band = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function Slip({ w }: { w: Warranty }) {
+  const covered = w.covered ?? TEMPLATE.covered;
+  const notCovered = w.notCovered ?? TEMPLATE.notCovered;
+  const claimSteps = w.claimSteps ?? TEMPLATE.claimSteps;
+  const refundNote = w.refundNote ?? TEMPLATE.refundNote;
+  const supportPhone = w.supportPhone ?? TEMPLATE.supportPhone;
+  const supportEmail = w.supportEmail ?? TEMPLATE.supportEmail;
+
   return (
     <div
       id="print-slip"
-      className="mx-auto max-w-[600px] bg-white p-8 text-[13px] text-black ring-1 ring-slate-200"
+      className="mx-auto w-full min-w-130 max-w-150 bg-white p-5 text-[13px] text-black ring-1 ring-slate-200 sm:p-8"
     >
       <h2 className="mb-6 text-center text-lg font-bold tracking-wide">
         INVOICE &amp; WARRANTY CARD
@@ -76,7 +57,7 @@ export default function Slip({ w }: { w: Warranty }) {
         <div className="border-r border-slate-400 bg-slate-100 px-3 py-2 font-bold">
           Warranty Period
         </div>
-        <div className="px-3 py-2">{w.warrantyPeriod}</div>
+        <div className="px-3 py-2">Valid till {fmtDate(w.warrantyEndDate)}</div>
       </div>
 
       {w.imageUrl && (
@@ -89,39 +70,45 @@ export default function Slip({ w }: { w: Warranty }) {
       )}
 
       {/* Covered / Not covered */}
-      <div className="mb-5 grid grid-cols-2 border border-slate-400">
-        <div className="border-r border-slate-400 p-3">
-          <ul className="space-y-1">
-            {COVERED.map((c) => (
-              <li key={c}>✓ {c}</li>
-            ))}
-          </ul>
+      {(covered.length > 0 || notCovered.length > 0) && (
+        <div className="mb-5 grid grid-cols-2 border border-slate-400">
+          <div className="border-r border-slate-400 p-3">
+            <ul className="space-y-1">
+              {covered.map((c, i) => (
+                <li key={i}>✓ {c}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="p-3">
+            <ul className="space-y-1">
+              {notCovered.map((c, i) => (
+                <li key={i}>✕ {c}</li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <div className="p-3">
-          <ul className="space-y-1">
-            {NOT_COVERED.map((c) => (
-              <li key={c}>✕ {c}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      )}
 
       {/* How to claim */}
-      <Band>HOW TO CLAIM WARRANTY</Band>
-      <div className="mb-5 space-y-2 border border-t-0 border-slate-400 p-3">
-        <ol className="list-decimal space-y-1 pl-5">
-          {STEPS.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ol>
-        <p className="pt-1 text-[12px] text-slate-700">
-          <b>N.B:</b> Where a warranty-related refund is approved, we will
-          initiate the refund within 3–5 working days of approval. The time
-          taken for the amount to appear in your account may depend on the
-          payment provider. Any applicable mandatory refund deadline will take
-          precedence.
-        </p>
-      </div>
+      {(claimSteps.length > 0 || refundNote) && (
+        <>
+          <Band>HOW TO CLAIM WARRANTY</Band>
+          <div className="mb-5 space-y-2 border border-t-0 border-slate-400 p-3">
+            {claimSteps.length > 0 && (
+              <ol className="list-decimal space-y-1 pl-5">
+                {claimSteps.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ol>
+            )}
+            {refundNote && (
+              <p className="pt-1 text-[12px] text-slate-700">
+                <b>N.B:</b> {refundNote}
+              </p>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Customer info */}
       <div className="mb-3 border border-slate-400 bg-slate-50 px-3 py-2 text-[12px]">
@@ -131,14 +118,16 @@ export default function Slip({ w }: { w: Warranty }) {
       </div>
 
       {/* Support footer */}
-      <div className="text-center text-[12px]">
-        <p className="font-semibold">Customer Support</p>
-        <p>Phone: {SUPPORT.phone}</p>
-        <p>Email: {SUPPORT.email}</p>
-        <p className="mt-2 font-bold tracking-wide">
-          THANK YOU FOR SHOPPING WITH US
-        </p>
-      </div>
+      {(supportPhone || supportEmail) && (
+        <div className="text-center text-[12px]">
+          <p className="font-semibold">Customer Support</p>
+          {supportPhone && <p>Phone: {supportPhone}</p>}
+          {supportEmail && <p>Email: {supportEmail}</p>}
+          <p className="mt-2 font-bold tracking-wide">
+            THANK YOU FOR SHOPPING WITH US
+          </p>
+        </div>
+      )}
     </div>
   );
 }

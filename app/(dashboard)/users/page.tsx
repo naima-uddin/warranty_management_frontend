@@ -102,8 +102,8 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        <table className="w-full min-w-160 text-sm">
           <thead className="border-b border-slate-100 bg-slate-50/80 text-left text-xs uppercase tracking-wide text-slate-400">
             <tr>
               <th className="px-5 py-3 font-medium">Name</th>
