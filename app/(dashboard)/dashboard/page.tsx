@@ -13,6 +13,16 @@ type ListResponse = {
   pages: number;
 };
 
+type RangeKey = "all" | "today" | "7days" | "month";
+type SortKey = "newest" | "oldest";
+
+const RANGES: { key: RangeKey; label: string }[] = [
+  { key: "all", label: "All time" },
+  { key: "today", label: "Today" },
+  { key: "7days", label: "Last 7 days" },
+  { key: "month", label: "Last month" },
+];
+
 export default function WarrantiesPage() {
   const { can } = useAuth();
   const [data, setData] = useState<ListResponse>({
@@ -22,29 +32,105 @@ export default function WarrantiesPage() {
     pages: 1,
   });
   const [q, setQ] = useState("");
+  const [range, setRange] = useState<RangeKey>("all");
+  const [from, setFrom] = useState(""); // custom range start (YYYY-MM-DD)
+  const [to, setTo] = useState(""); // custom range end (YYYY-MM-DD)
+  const [month, setMonth] = useState(""); // month picker value (YYYY-MM)
+  const [sort, setSort] = useState<SortKey>("newest");
   const [loading, setLoading] = useState(true);
 
-  const load = async (query = q, page = 1) => {
+  // Any field omitted from `opts` falls back to the current state.
+  const load = async (
+    opts: {
+      query?: string;
+      page?: number;
+      range?: RangeKey;
+      from?: string;
+      to?: string;
+      sort?: SortKey;
+    } = {}
+  ) => {
+    const query = opts.query ?? q;
+    const page = opts.page ?? 1;
+    const rangeKey = opts.range ?? range;
+    const fromV = opts.from ?? from;
+    const toV = opts.to ?? to;
+    const sortKey = opts.sort ?? sort;
+
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    params.set("page", String(page));
+    params.set("sort", sortKey);
+    // A custom from/to range wins over the preset quick range.
+    if (fromV || toV) {
+      if (fromV) params.set("from", fromV);
+      if (toV) params.set("to", toV);
+    } else {
+      params.set("range", rangeKey);
+    }
+
     setLoading(true);
     try {
-      setData(
-        await api<ListResponse>(
-          `/warranties?q=${encodeURIComponent(query)}&page=${page}`
-        )
-      );
+      setData(await api<ListResponse>(`/warranties?${params.toString()}`));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load("", 1);
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const search = (e: React.FormEvent) => {
     e.preventDefault();
-    load(q, 1);
+    load({ query: q, page: 1 });
+  };
+
+  // Sort order: reload from page 1 with the new order.
+  const changeSort = (sortKey: SortKey) => {
+    setSort(sortKey);
+    load({ page: 1, sort: sortKey });
+  };
+
+  // Quick preset range: clears any custom range / month selection.
+  const changeRange = (rangeKey: RangeKey) => {
+    setRange(rangeKey);
+    setFrom("");
+    setTo("");
+    setMonth("");
+    load({ page: 1, range: rangeKey, from: "", to: "" });
+  };
+
+  // Custom From / To date: clears the preset range and month picker.
+  const changeFrom = (v: string) => {
+    setFrom(v);
+    setRange("all");
+    setMonth("");
+    load({ page: 1, from: v, range: "all" });
+  };
+  const changeTo = (v: string) => {
+    setTo(v);
+    setRange("all");
+    setMonth("");
+    load({ page: 1, to: v, range: "all" });
+  };
+
+  // Month picker (YYYY-MM): filters the whole chosen month.
+  const changeMonth = (ym: string) => {
+    setMonth(ym);
+    if (!ym) {
+      changeRange("all");
+      return;
+    }
+    const [y, m] = ym.split("-").map(Number);
+    const first = `${ym}-01`;
+    const lastDay = new Date(y, m, 0).getDate(); // day 0 of next month = last of this
+    const last = `${ym}-${String(lastDay).padStart(2, "0")}`;
+    setFrom(first);
+    setTo(last);
+    setRange("all");
+    load({ page: 1, from: first, to: last, range: "all" });
   };
 
   const remove = async (w: Warranty) => {
@@ -54,7 +140,7 @@ export default function WarrantiesPage() {
     // Stay on the current page, or step back if it just emptied.
     const nextPage =
       data.items.length === 1 && data.page > 1 ? data.page - 1 : data.page;
-    load(q, nextPage);
+    load({ page: nextPage });
   };
 
   const { items, page, pages, total } = data;
@@ -106,7 +192,7 @@ export default function WarrantiesPage() {
             type="button"
             onClick={() => {
               setQ("");
-              load("", 1);
+              load({ query: "", page: 1 });
             }}
             className="rounded-xl px-3 text-sm text-slate-500 hover:bg-slate-100"
           >
@@ -117,6 +203,84 @@ export default function WarrantiesPage() {
           Search
         </button>
       </form>
+
+      {/* Date-range filter + sort order */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-1.5">
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => changeRange(r.key)}
+              className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${
+                range === r.key
+                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
+                  : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        <label className="flex items-center gap-2 text-sm text-slate-500">
+          Sort
+          <select
+            value={sort}
+            onChange={(e) => changeSort(e.target.value as SortKey)}
+            className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200 outline-none transition hover:bg-slate-50"
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
+      </div>
+
+      {/* Custom date range: any month, or any From–To span (by purchase date) */}
+      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-white p-3 text-sm shadow-sm ring-1 ring-slate-200">
+        <label className="flex items-center gap-2 text-slate-500">
+          Month
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => changeMonth(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-300"
+          />
+        </label>
+
+        <span className="hidden h-5 w-px bg-slate-200 sm:block" />
+
+        <label className="flex items-center gap-2 text-slate-500">
+          From
+          <input
+            type="date"
+            value={from}
+            max={to || undefined}
+            onChange={(e) => changeFrom(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-300"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-slate-500">
+          To
+          <input
+            type="date"
+            value={to}
+            min={from || undefined}
+            onChange={(e) => changeTo(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-300"
+          />
+        </label>
+
+        {(from || to || month) && (
+          <button
+            type="button"
+            onClick={() => changeRange("all")}
+            className="ml-auto rounded-xl px-3 py-1.5 font-medium text-slate-500 hover:bg-slate-100"
+          >
+            Clear dates
+          </button>
+        )}
+      </div>
 
       <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
         <table className="w-full min-w-160 text-sm">
@@ -204,14 +368,14 @@ export default function WarrantiesPage() {
           </p>
           <div className="flex gap-2">
             <button
-              onClick={() => load(q, page - 1)}
+              onClick={() => load({ page: page - 1 })}
               disabled={page <= 1}
               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
               ← Prev
             </button>
             <button
-              onClick={() => load(q, page + 1)}
+              onClick={() => load({ page: page + 1 })}
               disabled={page >= pages}
               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
