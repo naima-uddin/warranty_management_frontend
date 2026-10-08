@@ -113,8 +113,6 @@
     padding: 0 !important;
     box-shadow: none !important;
     font-size: 13px !important;
-    display: flex;
-    flex-direction: column;
   }
 
   #print-slip h2 {
@@ -140,11 +138,6 @@
   }
   #print-slip img {
     max-height: 150px !important;
-  }
-
-  /* Push the customer + support footer to the bottom of the page */
-  #print-slip > div:nth-last-child(2) {
-    margin-top: auto !important;
   }
 
   /* Don't split a section across two pages */
