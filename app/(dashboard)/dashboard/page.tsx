@@ -6,29 +6,58 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Warranty } from "@/lib/types";
 
+type ListResponse = {
+  items: Warranty[];
+  total: number;
+  page: number;
+  pages: number;
+};
+
 export default function WarrantiesPage() {
   const { can } = useAuth();
-  const [items, setItems] = useState<Warranty[]>([]);
+  const [data, setData] = useState<ListResponse>({
+    items: [],
+    total: 0,
+    page: 1,
+    pages: 1,
+  });
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const load = async (query = "") => {
+  const load = async (query = q, page = 1) => {
     setLoading(true);
     try {
-      setItems(await api<Warranty[]>(`/warranties?q=${encodeURIComponent(query)}`));
+      setData(
+        await api<ListResponse>(
+          `/warranties?q=${encodeURIComponent(query)}&page=${page}`
+        )
+      );
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    load("", 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const search = (e: React.FormEvent) => {
     e.preventDefault();
-    load(q);
+    load(q, 1);
   };
+
+  const remove = async (w: Warranty) => {
+    if (!confirm(`Delete warranty "${w.orderId}"? This cannot be undone.`))
+      return;
+    await api(`/warranties/${w._id}`, { method: "DELETE" });
+    // Stay on the current page, or step back if it just emptied.
+    const nextPage =
+      data.items.length === 1 && data.page > 1 ? data.page - 1 : data.page;
+    load(q, nextPage);
+  };
+
+  const { items, page, pages, total } = data;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -36,7 +65,7 @@ export default function WarrantiesPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Warranties</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {loading ? "Loading…" : `${items.length} record${items.length === 1 ? "" : "s"}`}
+            {loading ? "Loading…" : `${total} record${total === 1 ? "" : "s"}`}
           </p>
         </div>
         {can("warranty:create") && (
@@ -77,7 +106,7 @@ export default function WarrantiesPage() {
             type="button"
             onClick={() => {
               setQ("");
-              load("");
+              load("", 1);
             }}
             className="rounded-xl px-3 text-sm text-slate-500 hover:bg-slate-100"
           >
@@ -97,7 +126,7 @@ export default function WarrantiesPage() {
               <th className="px-5 py-3 font-medium">Customer</th>
               <th className="px-5 py-3 font-medium">Product</th>
               <th className="px-5 py-3 font-medium">Purchase date</th>
-              <th className="px-5 py-3"></th>
+              <th className="px-5 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -141,13 +170,24 @@ export default function WarrantiesPage() {
                   <td className="px-5 py-3.5 text-slate-600">
                     {new Date(w.purchaseDate).toLocaleDateString()}
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <Link
-                      href={`/warranties/${w._id}`}
-                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
-                    >
-                      View →
-                    </Link>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/warranties/${w._id}`}
+                        className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+                      >
+                        View
+                      </Link>
+                      {can("warranty:delete") && (
+                        <button
+                          onClick={() => remove(w)}
+                          title="Delete"
+                          className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -155,6 +195,31 @@ export default function WarrantiesPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {!loading && pages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Page {page} of {pages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => load(q, page - 1)}
+              disabled={page <= 1}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => load(q, page + 1)}
+              disabled={page >= pages}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
