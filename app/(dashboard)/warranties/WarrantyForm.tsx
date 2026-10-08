@@ -52,7 +52,7 @@ export default function WarrantyForm({ existing }: Props) {
           })
         : await api<Warranty>("/warranties", { method: "POST", body: fd });
 
-      router.push(`/warranties/${saved._id}`);
+      router.push(`/warranties/view?id=${saved._id}`);
     } catch (err) {
       setError((err as Error).message);
       setBusy(false);

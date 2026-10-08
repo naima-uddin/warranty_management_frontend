@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Warranty } from "@/lib/types";
 import Slip from "./Slip";
 
-export default function WarrantyDetailPage() {
-  const { id } = useParams<{ id: string }>();
+function WarrantyDetail() {
+  const id = useSearchParams().get("id");
   const { can } = useAuth();
   const router = useRouter();
   const [item, setItem] = useState<Warranty | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!id) return;
     api<Warranty>(`/warranties/${id}`)
       .then(setItem)
       .catch((e) => setError((e as Error).message));
@@ -51,7 +52,7 @@ export default function WarrantyDetailPage() {
           </button>
           {can("warranty:edit") && (
             <Link
-              href={`/warranties/${id}/edit`}
+              href={`/warranties/edit?id=${id}`}
               className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-slate-100"
             >
               Edit
@@ -72,5 +73,13 @@ export default function WarrantyDetailPage() {
         <Slip w={item} />
       </div>
     </div>
+  );
+}
+
+export default function WarrantyDetailPage() {
+  return (
+    <Suspense fallback={<p className="text-slate-400">Loading…</p>}>
+      <WarrantyDetail />
+    </Suspense>
   );
 }

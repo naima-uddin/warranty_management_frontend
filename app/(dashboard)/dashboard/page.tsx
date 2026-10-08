@@ -173,7 +173,7 @@ export default function WarrantiesPage() {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1">
                       <Link
-                        href={`/warranties/${w._id}`}
+                        href={`/warranties/view?id=${w._id}`}
                         className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
                       >
                         View
