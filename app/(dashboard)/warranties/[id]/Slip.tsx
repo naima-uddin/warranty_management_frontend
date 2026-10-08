@@ -123,11 +123,16 @@ export default function Slip({ w }: { w: Warranty }) {
           <p className="font-semibold">Customer Support</p>
           {supportPhone && <p>Phone: {supportPhone}</p>}
           {supportEmail && <p>Email: {supportEmail}</p>}
-          <p className="mt-2 font-bold tracking-wide">
-            THANK YOU FOR SHOPPING WITH US
-          </p>
         </div>
       )}
+
+      {/* Thank-you line — pinned to the very bottom when printing */}
+      <p
+        id="thank-you"
+        className="mt-3 text-center text-[15px] font-bold tracking-wide"
+      >
+        THANK YOU FOR SHOPPING WITH US
+      </p>
     </div>
   );
 }
