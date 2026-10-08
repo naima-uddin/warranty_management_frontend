@@ -8,6 +8,11 @@ const fmtDate = (d: string) =>
     year: "numeric",
   });
 
+// Muted, evenly-spaced separator dot between customer name / phone / email.
+const Dot = () => (
+  <span className="mx-1.5 align-middle text-[10px] text-slate-400">•</span>
+);
+
 const Band = ({ children }: { children: React.ReactNode }) => (
   <div className="bg-black px-3 py-1.5 text-sm font-bold text-white">
     {children}
@@ -113,16 +118,34 @@ export default function Slip({ w }: { w: Warranty }) {
       {/* Customer info */}
       <div className="mb-3 border border-slate-400 bg-slate-50 px-3 py-2 text-[12px]">
         <b>Customer:</b> {w.customerName}
-        {w.customerPhone && <> · {w.customerPhone}</>}
-        {w.customerEmail && <> · {w.customerEmail}</>}
+        {w.customerPhone && (
+          <>
+            <Dot />
+            <span className="whitespace-nowrap">{w.customerPhone}</span>
+          </>
+        )}
+        {w.customerEmail && (
+          <>
+            <Dot />
+            <span className="whitespace-nowrap">{w.customerEmail}</span>
+          </>
+        )}
       </div>
 
       {/* Support footer */}
       {(supportPhone || supportEmail) && (
         <div className="text-center text-[12px]">
           <p className="font-semibold">Customer Support</p>
-          {supportPhone && <p>Phone: {supportPhone}</p>}
-          {supportEmail && <p>Email: {supportEmail}</p>}
+          {supportPhone && (
+            <p>
+              Phone: <span className="whitespace-nowrap">{supportPhone}</span>
+            </p>
+          )}
+          {supportEmail && (
+            <p>
+              Email: <span className="whitespace-nowrap">{supportEmail}</span>
+            </p>
+          )}
         </div>
       )}
 

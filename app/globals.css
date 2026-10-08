@@ -101,6 +101,12 @@
     print-color-adjust: exact;
   }
 
+  /* Light slate borders print almost invisibly — force crisp dark table
+     lines on paper (Order ID / Purchase Date cells, product info table, etc.) */
+  #print-slip [class*="border-slate"] {
+    border-color: #334155 !important; /* slate-700 */
+  }
+
   #print-slip {
     position: absolute;
     left: 0;
