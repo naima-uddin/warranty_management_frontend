@@ -47,9 +47,9 @@ export default function WarrantyForm({ existing }: Props) {
 
       const saved = existing
         ? await api<Warranty>(`/warranties/${existing._id}`, {
-            method: "PUT",
-            body: fd,
-          })
+          method: "PUT",
+          body: fd,
+        })
         : await api<Warranty>("/warranties", { method: "POST", body: fd });
 
       router.push(`/warranties/view?id=${saved._id}`);
