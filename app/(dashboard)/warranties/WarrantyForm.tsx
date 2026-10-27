@@ -73,7 +73,7 @@ export default function WarrantyForm({ existing }: Props) {
           {existing ? "Edit warranty" : "New warranty"}
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Fill in the details below to generate the warranty card.
+          Fill in the details below to generate and print the warranty card.
         </p>
       </div>
 
