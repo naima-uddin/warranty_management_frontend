@@ -163,15 +163,7 @@ export default function WarrantyForm({ existing }: Props) {
             The date the warranty is valid until.
           </p>
         </div>
-        <div className="sm:col-span-2">
-          <label className={label}>Note</label>
-          <textarea
-            name="note"
-            rows={2}
-            defaultValue={existing?.note}
-            className={field}
-          />
-        </div>
+
         <div className="sm:col-span-2">
           <label className={label}>Product image (optional)</label>
           <input
