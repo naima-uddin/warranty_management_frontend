@@ -105,10 +105,9 @@ export default function WarrantyForm({ existing }: Props) {
           />
         </div>
         <div>
-          <label className={label}>Customer name *</label>
+          <label className={label}>Customer name</label>
           <input
             name="customerName"
-            required
             defaultValue={existing?.customerName}
             className={field}
           />
